@@ -54,7 +54,7 @@ The following code creates a plot and displays it to the Plots window.
 ```{r}
 ggplot(pumpkin_data, aes(year, pumpkin_kcwt))+
   geom_col(fill = "orange")+
-  labs(x = "Year", y = "Pumpkin production ")
+  labs(x = "Year", y = "Pumpkin production\n (units of 1000 hundredweight)")+
   theme_minimal()
 ```
 
