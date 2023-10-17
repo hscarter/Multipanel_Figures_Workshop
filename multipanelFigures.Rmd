@@ -3,6 +3,8 @@ title: "Multipanel Figures"
 author: "Haley Carter"
 date: "2023-10-10"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -21,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 -   gridExtra - functions for working with grid graphics
 
-To learn more about any of these (or any other!) packages, you can search them in Help or click their names in Packages. We will definitely not cover everything they can do in one hour. 
+To learn more about any of these (or any other!) packages, you can search them in Help or click their names in Packages. We will definitely not cover everything they can do in one hour.
 
 Please install the packages we will use today if you don't already have them:
 
@@ -41,11 +43,164 @@ library(ggpubr)
 library(gridExtra)
 ```
 
-## Plots as objects
+## Data
 
 ```{r}
-ggplot(pumpkin_data, aes(year, pumpkin_kcwt))+
+pumpkin_production <- read_csv("data/pumpkin_production.csv")
+pumpkin_varieties <- read_csv("data/pumpkin_varieties.csv", skip = 1,
+                              col_names = c("variety",
+                                            "days_mature",
+                                            "size_lbs",
+                                            "powdery_hybrid",
+                                            "resistance",
+                                            "notes"),
+                              col_types = cols(powdery_hybrid = col_factor(),
+                                               resistance = col_factor()))
+```
+
+## Plots as objects
+
+The following code chunk creates a ggplot object that loads in the plot window. Go ahead and run it.
+
+```{r, eval=F}
+ggplot(pumpkin_production, aes(year, pumpkin_kcwt))+
   geom_col(fill = "orange")+
   labs(x = "Year", y = "Pumpkin production\n (units of 1000 hundredweights)")+
   theme_minimal()
 ```
+
+To work with this graph, we want to save it as a named object so we assign it to a name:
+
+```{r}
+pump_prod <- ggplot(pumpkin_production, aes(year, pumpkin_kcwt))+
+  geom_col(fill = "orange")+
+  labs(x = "Year", y = "Pumpkin production\n (units of 1000 hundredweights)")+
+  theme_minimal()
+```
+
+Note that that code chunk does not output a plot, but rather saves a new ggplot object to your environment. Like other objects, it has attributes you could use the \$ notation to index. But you're probably most interested in plotting it, which you can do by just running the name:
+
+```{r}
+pump_prod
+```
+
+### Exercise 1: Save some named plots
+
+The following code creates some plots. Please save them with the following names:
+
+1.  The plot with "Days to maturity" on the x-axis should be called "pump_time".
+2.  The plot with "Size as maturity (lbs)" on the y-axis should be called "pump_size".
+3.  The first scatterplot should be called "hybrid_grow".
+4.  The second scatterplot should be called "nonhybrid_grow".
+
+```{r, eval=F}
+ggplot(pumpkin_varieties, aes(days_mature, variety))+
+  geom_col()+
+  theme_minimal()+
+  labs(y = "Variety", x = "Days to maturity")
+
+ggplot(pumpkin_varieties, aes(size_lbs, variety))+
+  geom_col()+
+  theme_minimal()+
+  labs(y = "Variety", x = "Size at maturity (lbs)")
+
+ggplot(pumpkin_varieties[pumpkin_varieties$powdery_hybrid == "yes",], aes(days_mature, size_lbs))+
+  geom_point()+
+  theme_minimal()+
+  labs(x = "Days to maturity", y = "Size at maturity (lbs)")
+
+ggplot(pumpkin_varieties[pumpkin_varieties$powdery_hybrid == "no",], aes(days_mature, size_lbs))+
+  geom_point()+
+  theme_minimal()+
+  labs(x = "Days to maturity", y = "Size at maturity (lbs)")
+```
+
+## Putting the plots together - ggpubr
+
+The ggpubr package contains a function called ggarrange() used to arrange plots. The plots are included as arguments separated by a comma. ggarrange() operates on a grid, you can use the ncol, and nrow arguments to set the size of the grid. It will fill from top to bottom and left to right.
+
+### Example
+
+```{r, eval=F}
+ggarrange(pump_prod, pump_grow)
+```
+
+### Exercise 2: Arrange plots side by side
+
+Use ggarrange() to create a figure with pump_time next to pump_size.
+
+```{r}
+
+```
+
+### Adding labels
+
+Most publications require labels on each panel of a multipanel plot. With ggarrange() you can add these with the labels argument.
+
+```{r}
+ggarrange(pump_time, pump_size, labels = c("A", "B"))
+```
+
+### Other helpful arguments
+
+ggarrange() has many other arguments, allowing more customization. widths can be used to adjust the relative sizes of different plots. align can be used to align the axes. font.label takes a list that can be used to adjust the size, color, and font of the labels. You can access the documentation for ggarrange by typing ?ggarrange() in the console.
+
+### Example
+
+```{r}
+ggarrange(pump_time, pump_size, labels = c("A", "B"), widths = c(1, 2))
+```
+
+But what if you're not working on a grid?
+
+## patchwork
+
+The patchwork package is useful for more complicated layouts.
+
+Run these line by line and see what they do!
+
+```{r, eval=F}
+pump_time + pump_size
+pump_time | pump_size
+pump_time / pump_size
+```
+
+patchwork uses the arithmetic operators to work with ggplot objects to arrange them. Because R knows what kind of objects it's working with, you can switch between using them for arithmetic and using them to arrange plots pretty seamlessly!
+
+But the more complicated the layout, the more complicated the syntax. Try the following line:
+
+```{r, eval=F}
+pump_time + pump_size / pump_prod
+```
+
+Order of operations is built into these operators so the forward slash or division sign is being evaluated first, followed by the plus sign, and because there is now a top and a bottom, it's adding the pump_time graph to both.
+
+You can get around this with () like you would with a mathematical expression, or you can save named pieces of your figure and then put them together.
+
+```{r, eval=F}
+# with parentheses
+(pump_time | pump_size) / pump_prod
+# in steps
+varieties <- pump_time + pump_size
+varieties / pump_prod
+# with ggarrange and patchwork together
+varieties2 <- ggarrange(pump_time, pump_size)
+varieties2 / pump_prod # layout is not quite as nice
+```
+
+### Exercise 2:
+
+Use patchwork to create a figure with hybrid_grow next to nonhybrid_grow. 
+
+```{r}
+
+```
+
+### Adding labels
+
+To add labels with patchwork, you use the plot_layout() and plot_annotation() functions.
+
+```{r}
+hybrid_grow | nonhybrid_grow + plot_layout(tag_level = "new") + plot_annotation(tag_levels = "A")
+```
+
