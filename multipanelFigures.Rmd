@@ -9,25 +9,36 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Packages
+## Today's packages
 
-- readr
+-   readr - for reading in data, part of tidyverse
 
-- ggplot2
+-   ggplot2 - for plotting, part of tidyverse
 
-- patchwork
+-   patchwork - a package for "composing" plots into figures
 
-- ggpubr
+-   ggpubr - a package for formatting ggplots as publication-ready figures
 
-- gridExtra
+-   gridExtra - functions for working with grid graphics
+
+To learn more about any of these (or any other!) packages, you can search them in Help or click their names in Packages. We will definitely not cover everything they can do in one hour. 
+
+Please install the packages we will use today if you don't already have them:
 
 ```{r, eval=F}
-install.packages()
+# if you need to install any of the packages we're going to use today you can use the install.packages() function as written below by replacing packageName with the name of the package you'd like to install
+install.packages("packageName")
 ```
 
+And then load the packages into your library:
 
 ```{r}
-library()
+# in addition to having the packages installed, we need to load them into our library so we can use their functions
+library(readr)
+library(ggplot2)
+library(patchwork)
+library(ggpubr)
+library(gridExtra)
 ```
 
 ## Plots as objects
@@ -38,4 +49,3 @@ ggplot(pumpkin_data, aes(year, pumpkin_kcwt))+
   labs(x = "Year", y = "Pumpkin production\n (units of 1000 hundredweights)")+
   theme_minimal()
 ```
-
