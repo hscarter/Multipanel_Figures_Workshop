@@ -21,8 +21,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 -   ggpubr - a package for formatting ggplots as publication-ready figures
 
--   gridExtra - functions for working with grid graphics
-
 To learn more about any of these (or any other!) packages, you can search them in Help or click their names in Packages. We will definitely not cover everything they can do in one hour.
 
 Please install the packages we will use today if you don't already have them:
@@ -40,7 +38,6 @@ library(readr)
 library(ggplot2)
 library(patchwork)
 library(ggpubr)
-library(gridExtra)
 ```
 
 ## Data
@@ -94,22 +91,22 @@ The following code creates some plots. Please save them with the following names
 4.  The second scatterplot should be called "nonhybrid_grow".
 
 ```{r, eval=F}
-ggplot(pumpkin_varieties, aes(days_mature, variety))+
+pump_time <- ggplot(pumpkin_varieties, aes(days_mature, variety))+
   geom_col()+
   theme_minimal()+
   labs(y = "Variety", x = "Days to maturity")
 
-ggplot(pumpkin_varieties, aes(size_lbs, variety))+
+pump_size <- ggplot(pumpkin_varieties, aes(size_lbs, variety))+
   geom_col()+
   theme_minimal()+
   labs(y = "Variety", x = "Size at maturity (lbs)")
 
-ggplot(pumpkin_varieties[pumpkin_varieties$powdery_hybrid == "yes",], aes(days_mature, size_lbs))+
+hybrid_grow <- ggplot(pumpkin_varieties[pumpkin_varieties$powdery_hybrid == "yes",], aes(days_mature, size_lbs))+
   geom_point()+
   theme_minimal()+
   labs(x = "Days to maturity", y = "Size at maturity (lbs)")
 
-ggplot(pumpkin_varieties[pumpkin_varieties$powdery_hybrid == "no",], aes(days_mature, size_lbs))+
+nonhybrid_grow <- ggplot(pumpkin_varieties[pumpkin_varieties$powdery_hybrid == "no",], aes(days_mature, size_lbs))+
   geom_point()+
   theme_minimal()+
   labs(x = "Days to maturity", y = "Size at maturity (lbs)")
@@ -137,7 +134,7 @@ Use ggarrange() to create a figure with pump_time next to pump_size.
 
 Most publications require labels on each panel of a multipanel plot. With ggarrange() you can add these with the labels argument.
 
-```{r}
+```{r, eval=F}
 ggarrange(pump_time, pump_size, labels = c("A", "B"))
 ```
 
@@ -147,8 +144,16 @@ ggarrange() has many other arguments, allowing more customization. widths can be
 
 ### Example
 
-```{r}
+```{r, eval=F}
 ggarrange(pump_time, pump_size, labels = c("A", "B"), widths = c(1, 2))
+```
+
+### Exercise 3:
+
+Use ggarrange() to layout the scatterplots (hybrid_grow and nonhybrid_grow) on the left and the barplots (pump_time and pump_size) on the right with lettered panel labels and the barplots twice as wide as the scatterplots.
+
+```{r}
+
 ```
 
 But what if you're not working on a grid?
@@ -188,9 +193,9 @@ varieties2 <- ggarrange(pump_time, pump_size)
 varieties2 / pump_prod # layout is not quite as nice
 ```
 
-### Exercise 2:
+### Exercise 4:
 
-Use patchwork to create a figure with hybrid_grow next to nonhybrid_grow. 
+Use patchwork to create a figure with hybrid_grow next to nonhybrid_grow.
 
 ```{r}
 
@@ -198,9 +203,41 @@ Use patchwork to create a figure with hybrid_grow next to nonhybrid_grow.
 
 ### Adding labels
 
-To add labels with patchwork, you use the plot_layout() and plot_annotation() functions.
+To add labels with patchwork, you use the plot_layout() and plot_annotation() functions. Note: for some reason this doesn't work if you use the \| without putting that part of your expression in ().
 
-```{r}
-hybrid_grow | nonhybrid_grow + plot_layout(tag_level = "new") + plot_annotation(tag_levels = "A")
+```{r, eval=F}
+hybrid_grow + nonhybrid_grow + plot_annotation(tag_levels = "A")
 ```
 
+plot_annotation() has many other arguments for adding other types of annotation such as titles or captions, and plot_layout() can also be added to figures to define a grid like ggarrange() does.
+
+### Exercise 5:
+
+Compose a figure with the two scatterplots next to each other, on top of the two barplots next to each other, all over the pump_prod barplot, with labels. This can be done just with patchwork or just with ggarrange or with a combination of the two. If you succeed one way and have extra time, try with the other package!
+
+```{r}
+
+```
+
+## Saving figures
+
+You can use the RStudio GUI to save figures, or use the ggsave() function:
+
+1.  From the Plots panel you choose "Export" and pick an export filetype and specify the dimensions.
+2.  ggsave() saves ggplots (or other grid objects) with the desired filename for your figure as the first argument. It will default to save the current or most recent plot from the plot window, but has many helpful arguments for choosing which plot, or choosing the dimensions and format. Check them out with ?ggsave()
+
+## More to learn!
+
+### ggpubr
+
+ggpubr has many other functions beyond ggarrange(), including functions for plotting that have a more similar syntax to base R. If you like the ggplot aesthetics and ability to use ggarrange() but haven't learned all the ggplot syntax this is an alternative with potentially less learning curve. It also includes some nice built in themes. Learn more at the link below.
+
+<https://rpkgs.datanovia.com/ggpubr/>
+
+### patchwork
+
+Next steps with patchwork would be to explore more of the functionality of plot_layout() and plot_annotation(). The resources below are a great place to start.
+
+<https://patchwork.data-imaginist.com/articles/guides/layout.html#controlling-guides>
+
+<https://patchwork.data-imaginist.com/articles/guides/annotation.html>
